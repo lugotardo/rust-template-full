@@ -6,6 +6,17 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+// Módulo de configuração
+pub mod config;
+
+// Módulo de banco de dados (apenas quando feature "postgres" está habilitada)
+#[cfg(feature = "postgres")]
+pub mod db;
+
+// Módulo de API (apenas quando feature "api" está habilitada)
+#[cfg(feature = "api")]
+pub mod api;
+
 /// Estrutura que representa um usuário do sistema
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct User {

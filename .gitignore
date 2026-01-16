@@ -28,5 +28,9 @@ result-*
 .env
 .env.local
 
+# Configuration
+config.toml
+!config.example.toml
+
 # Generated files
 *.log

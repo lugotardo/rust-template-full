@@ -8,6 +8,9 @@ Uma aplicação Rust completa configurada com Nix Flakes para builds reproduzív
 - ✅ Gerenciamento de dependências com Nix Flakes
 - ✅ CLI interativa com `clap`
 - ✅ Serialização JSON com `serde`
+- ✅ **PostgreSQL 16 integrado** (opcional com feature flag)
+- ✅ SQLx para queries type-safe
+- ✅ Migrations automáticas
 - ✅ Testes unitários e de integração
 - ✅ Benchmarks com Criterion
 - ✅ Ambiente de desenvolvimento configurado
@@ -37,6 +40,19 @@ Isso irá carregar um shell com todas as ferramentas necessárias:
 - cargo-edit
 - rustfmt
 - clippy
+
+### Ou com PostgreSQL habilitado
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' develop .#with-postgres
+```
+
+Isso inclui tudo acima mais:
+- PostgreSQL 16
+- Funções auxiliares (pg_start, pg_stop, etc.)
+- Variáveis de ambiente configuradas
+
+📖 **Veja [POSTGRES.md](POSTGRES.md) para documentação completa do PostgreSQL**
 
 ### Compilando o projeto
 
@@ -78,6 +94,11 @@ cargo run -- process test.json
 
 # Modo verbose
 cargo run -- --verbose greet "Nix"
+
+# Comandos de banco de dados (requer feature postgres)
+cargo run --features postgres -- db init
+cargo run --features postgres -- db list-users
+cargo run --features postgres -- db create-user "João" "joao@example.com"
 ```
 
 ## 🧪 Testes
@@ -229,6 +250,41 @@ nix build --print-out-paths
 5. Formate o código: `cargo fmt`
 6. Verifique com clippy: `cargo clippy`
 
+## 🐘 PostgreSQL
+
+Este projeto inclui suporte completo a PostgreSQL 16 usando SQLx.
+
+### Início Rápido com Postgres
+
+```bash
+# 1. Entrar no shell com PostgreSQL
+nix --extra-experimental-features 'nix-command flakes' develop .#with-postgres
+
+# 2. Iniciar o PostgreSQL
+pg_start
+
+# 3. Executar migrations
+cargo run --features postgres -- db init
+
+# 4. Criar um usuário
+cargo run --features postgres -- db create-user "Alice" "alice@example.com"
+
+# 5. Listar usuários
+cargo run --features postgres -- db list-users
+```
+
+📖 **Documentação completa:** [POSTGRES.md](POSTGRES.md)
+
+### Features do PostgreSQL
+
+- ✅ PostgreSQL 16 gerenciado pelo Nix
+- ✅ SQLx com compile-time checked queries
+- ✅ Migrations automáticas
+- ✅ Connection pooling
+- ✅ CRUD completo de exemplo
+- ✅ Comandos CLI prontos
+- ✅ Funções auxiliares (pg_start, pg_stop, etc.)
+
 ## 📄 Licença
 
 MIT
@@ -239,6 +295,8 @@ MIT
 - [Nix Flakes](https://nixos.wiki/wiki/Flakes)
 - [rust-overlay](https://github.com/oxalica/rust-overlay)
 - [Clap Documentation](https://docs.rs/clap/)
+- [SQLx Documentation](https://docs.rs/sqlx/)
+- [PostgreSQL Docs](https://www.postgresql.org/docs/)
 
 ---
 

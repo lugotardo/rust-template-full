@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Nix
+result
+result-*
+.pgdata
+flake.lock
+
+# Rust build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Tests
+tests/
+benches/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Deploy
+deploy/
+docker-compose.yml
+Dockerfile
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/

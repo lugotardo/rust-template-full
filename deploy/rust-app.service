@@ -1,0 +1,57 @@
+[Unit]
+Description=Rust Application with PostgreSQL
+Documentation=https://github.com/seu-usuario/rust-app-exemplo
+After=network.target postgresql.service
+Wants=postgresql.service
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=rust-app
+Group=rust-app
+WorkingDirectory=/opt/rust-app
+
+# Binário da aplicação
+ExecStart=/opt/rust-app/bin/rust-app-exemplo db init
+
+# Reiniciar automaticamente em caso de falha
+Restart=on-failure
+RestartSec=5s
+
+# Número máximo de reinicializações em um período
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+# Variáveis de ambiente
+Environment="RUST_LOG=info"
+Environment="PGHOST=localhost"
+Environment="PGPORT=5432"
+Environment="PGDATABASE=rust_app_db"
+Environment="PGUSER=rust_app_user"
+
+# Carregar variáveis de ambiente de arquivo (opcional)
+EnvironmentFile=-/etc/rust-app/env
+
+# Segurança - Sandboxing
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/rust-app/data
+
+# Limites de recursos
+LimitNOFILE=65536
+MemoryLimit=512M
+CPUQuota=200%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rust-app
+
+# Timeout
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

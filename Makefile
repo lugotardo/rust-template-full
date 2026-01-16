@@ -12,17 +12,29 @@ help: ## Mostra esta mensagem de ajuda
 dev: ## Entra no ambiente de desenvolvimento Nix
 	$(NIX) develop
 
+dev-postgres: ## Entra no ambiente de desenvolvimento Nix com PostgreSQL
+	$(NIX) develop .#with-postgres
+
 build: ## Compila o projeto em modo debug
 	$(CARGO) build
 
+build-postgres: ## Compila o projeto com suporte a PostgreSQL
+	$(CARGO) build --features postgres
+
 build-release: ## Compila o projeto em modo release
 	$(CARGO) build --release
+
+build-release-postgres: ## Compila com PostgreSQL em modo release
+	$(CARGO) build --release --features postgres
 
 nix-build: ## Compila usando Nix
 	$(NIX) build
 
 run: ## Executa a aplicação
 	$(CARGO) run
+
+run-postgres: ## Executa a aplicação com PostgreSQL
+	$(CARGO) run --features postgres
 
 run-release: ## Executa a aplicação em modo release
 	$(CARGO) run --release
@@ -106,3 +118,69 @@ outdated: ## Verifica dependências desatualizadas
 
 audit: ## Verifica vulnerabilidades de segurança
 	$(CARGO) audit
+
+# Comandos PostgreSQL
+pg-init: ## Inicializa o banco de dados e executa migrations
+	$(CARGO) run --features postgres -- db init
+
+pg-ping: ## Testa a conexão com o banco
+	$(CARGO) run --features postgres -- db ping
+
+pg-list: ## Lista todos os usuários do banco
+	$(CARGO) run --features postgres -- db list-users
+
+pg-create: ## Cria um usuário (uso: make pg-create NAME="João" EMAIL="joao@example.com")
+	$(CARGO) run --features postgres -- db create-user "$(NAME)" "$(EMAIL)"
+
+pg-get: ## Busca usuário por ID (uso: make pg-get ID=1)
+	$(CARGO) run --features postgres -- db get-user $(ID)
+
+pg-delete: ## Deleta usuário por ID (uso: make pg-delete ID=1)
+	$(CARGO) run --features postgres -- db delete-user $(ID)
+
+# Comandos de Deploy
+deploy-check: ## Verifica pré-requisitos para deploy
+	./deploy/deploy.sh check
+
+deploy-docker: ## Deploy usando Docker Compose
+	./deploy/deploy.sh docker
+
+deploy-docker-build: ## Deploy usando Docker Compose com rebuild
+	./deploy/deploy.sh docker --build
+
+deploy-docker-tools: ## Deploy Docker com ferramentas (pgAdmin)
+	./deploy/deploy.sh docker --with-tools
+
+deploy-systemd: ## Deploy usando systemd (requer root)
+	./deploy/deploy.sh systemd
+
+deploy-nix: ## Deploy usando Nix (build local)
+	./deploy/deploy.sh nix
+
+deploy-nix-remote: ## Deploy Nix remoto (uso: make deploy-nix-remote TARGET=user@server)
+	./deploy/deploy.sh nix --target $(TARGET)
+
+deploy-local: ## Deploy local (compilar e instalar)
+	./deploy/deploy.sh local
+
+deploy-cleanup: ## Limpar recursos de deploy
+	./deploy/deploy.sh cleanup
+
+# Docker Compose
+docker-up: ## Inicia serviços Docker Compose
+	docker compose up -d
+
+docker-down: ## Para serviços Docker Compose
+	docker compose down
+
+docker-logs: ## Ver logs Docker Compose
+	docker compose logs -f
+
+docker-ps: ## Lista containers Docker Compose
+	docker compose ps
+
+docker-build: ## Build imagem Docker
+	docker build -t rust-app:latest .
+
+docker-exec: ## Executar shell no container (uso: make docker-exec)
+	docker compose exec app sh

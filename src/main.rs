@@ -42,6 +42,40 @@ enum Commands {
         /// Número para calcular
         n: u64,
     },
+    #[cfg(feature = "postgres")]
+    /// Comandos de banco de dados
+    Db {
+        #[command(subcommand)]
+        command: DbCommands,
+    },
+}
+
+#[cfg(feature = "postgres")]
+#[derive(Parser, Debug)]
+enum DbCommands {
+    /// Inicializa o banco de dados e executa migrations
+    Init,
+    /// Testa a conexão com o banco
+    Ping,
+    /// Cria um novo usuário
+    CreateUser {
+        /// Nome do usuário
+        name: String,
+        /// Email do usuário
+        email: String,
+    },
+    /// Lista todos os usuários
+    ListUsers,
+    /// Busca usuário por ID
+    GetUser {
+        /// ID do usuário
+        id: i32,
+    },
+    /// Deleta um usuário
+    DeleteUser {
+        /// ID do usuário
+        id: i32,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -61,7 +95,8 @@ impl Default for Config {
     }
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     if args.verbose {
@@ -93,6 +128,10 @@ fn main() -> Result<()> {
             let result = fibonacci(n);
             println!("Fibonacci({}) = {}", n, result);
         }
+        #[cfg(feature = "postgres")]
+        Some(Commands::Db { command }) => {
+            handle_db_command(command).await?;
+        }
         None => {
             if let Some(name) = args.name {
                 greet(&name);
@@ -101,6 +140,72 @@ fn main() -> Result<()> {
                 println!("Use --help para ver os comandos disponíveis");
             }
         }
+    }
+
+    #[cfg(feature = "postgres")]
+    async fn handle_db_command(command: DbCommands) -> Result<()> {
+        use rust_app_exemplo::db::{Database, DbUser};
+
+        match command {
+            DbCommands::Init => {
+                println!("🔧 Inicializando banco de dados...");
+                let db = Database::from_env().await?;
+                db.migrate().await?;
+                println!("✅ Banco de dados inicializado com sucesso!");
+                println!("📊 Migrations executadas!");
+            }
+            DbCommands::Ping => {
+                println!("🔍 Testando conexão com o banco...");
+                let db = Database::from_env().await?;
+                db.ping().await?;
+                println!("✅ Conexão OK!");
+            }
+            DbCommands::CreateUser { name, email } => {
+                println!("👤 Criando usuário...");
+                let db = Database::from_env().await?;
+                let user = DbUser::create(db.pool(), &name, &email).await?;
+                println!("✅ Usuário criado com sucesso!");
+                println!("{}", serde_json::to_string_pretty(&user)?);
+            }
+            DbCommands::ListUsers => {
+                println!("📋 Listando usuários...");
+                let db = Database::from_env().await?;
+                let users = DbUser::list_all(db.pool()).await?;
+                let count = DbUser::count(db.pool()).await?;
+
+                println!("\n{} usuário(s) encontrado(s):\n", count);
+                for user in users {
+                    println!(
+                        "  [{}] {} - {} ({})",
+                        user.id,
+                        user.name,
+                        user.email,
+                        if user.active { "ativo" } else { "inativo" }
+                    );
+                }
+            }
+            DbCommands::GetUser { id } => {
+                println!("🔍 Buscando usuário #{}...", id);
+                let db = Database::from_env().await?;
+                match DbUser::find_by_id(db.pool(), id).await? {
+                    Some(user) => {
+                        println!("✅ Usuário encontrado!");
+                        println!("{}", serde_json::to_string_pretty(&user)?);
+                    }
+                    None => {
+                        println!("❌ Usuário não encontrado!");
+                    }
+                }
+            }
+            DbCommands::DeleteUser { id } => {
+                println!("🗑️  Deletando usuário #{}...", id);
+                let db = Database::from_env().await?;
+                DbUser::delete(db.pool(), id).await?;
+                println!("✅ Usuário deletado com sucesso!");
+            }
+        }
+
+        Ok(())
     }
 
     Ok(())

@@ -6,13 +6,51 @@ authors = ["Seu Nome <seu@email.com>"]
 description = "Uma aplicação Rust modelo usando Nix"
 license = "MIT"
 
+[features]
+default = ["api"]
+postgres = ["dep:sqlx", "dep:chrono"]
+api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:validator"]
+observability = ["dep:prometheus", "dep:metrics", "dep:metrics-exporter-prometheus"]
+full = ["postgres", "api", "observability"]
+
 [dependencies]
+# CLI
 clap = { version = "4.4", features = ["derive"] }
+
+# Serialização
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# Async runtime
 tokio = { version = "1.35", features = ["full"] }
+
+# Error handling
 anyhow = "1.0"
 thiserror = "1.0"
+
+# Logging e tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuração
+config = "0.14"
+dotenvy = "0.15"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Dependências do PostgreSQL (opcional)
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls", "migrate", "chrono"], optional = true }
+chrono = { version = "0.4", features = ["serde"], optional = true }
+
+# API REST (opcional)
+axum = { version = "0.7", features = ["macros"], optional = true }
+tower = { version = "0.4", optional = true }
+tower-http = { version = "0.5", features = ["trace", "cors", "compression-gzip"], optional = true }
+validator = { version = "0.18", features = ["derive"], optional = true }
+
+# Observabilidade (opcional)
+prometheus = { version = "0.13", optional = true }
+metrics = { version = "0.23", optional = true }
+metrics-exporter-prometheus = { version = "0.15", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
