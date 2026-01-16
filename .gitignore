@@ -1,0 +1,32 @@
+# Rust
+target/
+# Cargo.lock is needed for Nix builds
+# Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Nix
+result
+result-*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Benchmark results
+*.criterion
+
+# Test artifacts
+*.profraw
+*.profdata
+
+# Environment
+.env
+.env.local
+
+# Generated files
+*.log

@@ -1,0 +1,26 @@
+{
+  "app_name": "rust-app-exemplo",
+  "version": "0.1.0",
+  "features": [
+    "cli",
+    "json",
+    "async",
+    "serialization"
+  ],
+  "settings": {
+    "verbose": false,
+    "log_level": "info",
+    "max_workers": 4
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "myapp_db",
+    "pool_size": 10
+  },
+  "api": {
+    "base_url": "https://api.example.com",
+    "timeout_seconds": 30,
+    "retry_attempts": 3
+  }
+}
